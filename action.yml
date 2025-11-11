@@ -1,0 +1,94 @@
+name: "Date-Time Commit Release"
+description: "Creates a GitHub release with a tag based on commit date and SHA"
+author: "Igor Gatis"
+
+inputs:
+  commit:
+    description: "Commit reference to release (branch, tag, or commit hash)"
+    required: true
+  github-token:
+    description: "GitHub token for API access"
+    required: true
+    default: ${{ github.token }}
+  release-name:
+    description: 'Release name template. Use {tag} placeholder. Default: "Release {tag}"'
+    required: false
+    default: "Release {tag}"
+
+outputs:
+  tag:
+    description: "The generated release tag"
+    value: ${{ steps.generate.outputs.tag }}
+  iso-date:
+    description: "The commit date in ISO 8601 format (UTC)"
+    value: ${{ steps.generate.outputs.iso-date }}
+  short-sha:
+    description: "The short commit SHA (7 characters)"
+    value: ${{ steps.generate.outputs.short-sha }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Generate release tag and create release
+      id: generate
+      uses: actions/github-script@v8
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const { data: { commit, sha } } = await github.rest.repos.getCommit({
+            ...context.repo,
+            ref: '${{ inputs.commit }}'
+          });
+
+          const commitDate = new Date(commit.committer.date).toISOString();
+          const [date, time] = commitDate.replace(/[-:]/g, '').split(/\D+/);
+          const shortSha = sha.substring(0, 7);
+          const tag = `${date}-${time}-${shortSha}`;
+
+          try {
+            await github.rest.repos.getReleaseByTag({
+              ...context.repo,
+              tag: tag
+            });
+            core.setFailed(
+              `Release with tag '${tag}' already exists.\n` +
+              `This means the commit has already been released.`
+            );
+            return;
+          } catch (error) {
+            if (error.status !== 404) {
+              throw error;
+            }
+          }
+
+          const releaseName = '${{ inputs.release-name }}'.replaceAll('{tag}', tag);
+
+          let releaseNotes = (await github.rest.repos.generateReleaseNotes({
+            ...context.repo,
+            tag_name: tag,
+            target_commitish: '${{ inputs.commit }}'
+          })).data.body || '';
+
+          // Need to truncate otherwise createRelease fails.
+          const maxLength = 124900;
+          if (releaseNotes.length > maxLength) {
+            releaseNotes = releaseNotes.substring(0, maxLength) +
+              '\n\n... (truncated)';
+          }
+
+          await github.rest.repos.createRelease({
+            ...context.repo,
+            tag_name: tag,
+            name: releaseName,
+            body: releaseNotes
+          });
+
+          core.setOutput('tag', tag);
+          core.setOutput('iso-date', commitDate);
+          core.setOutput('short-sha', shortSha);
+
+          core.info(`Created release '${releaseName}' with tag '${tag}'`);
+
+branding:
+  icon: "tag"
+  color: "blue"
