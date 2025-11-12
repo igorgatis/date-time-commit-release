@@ -205,7 +205,7 @@ jobs:
     steps:
       - name: Deploy release
         run: |
-          echo "Deploying ${{ needs.release.outputs.tag }}"
+          echo "Release tag: ${{ needs.release.outputs.tag }}"
           echo "Commit date: ${{ needs.release.outputs.iso-date }}"
           echo "Short SHA: ${{ needs.release.outputs.short-sha }}"
           echo "Full SHA: ${{ needs.release.outputs.long-sha }}"
