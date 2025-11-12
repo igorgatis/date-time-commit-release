@@ -10,6 +10,10 @@ inputs:
     description: "GitHub token for API access"
     required: true
     default: ${{ github.token }}
+  tag-format:
+    description: 'Tag format template. Tokens: {YYYY}, {YY}, {MM}, {M}, {DD}, {D}, {HH}, {H}, {mm}, {m}, {ss}, {s}, {sha}, {sha:N}. Default: "{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:8}"'
+    required: false
+    default: "{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:8}"
   release-name:
     description: 'Release name template. Use {tag} placeholder. Default: "Release {tag}"'
     required: false
@@ -40,10 +44,41 @@ runs:
             ref: '${{ inputs.commit }}'
           });
 
-          const commitDate = new Date(commit.committer.date).toISOString();
-          const [date, time] = commitDate.replace(/[-:]/g, '').split(/\D+/);
-          const shortSha = sha.substring(0, 7);
-          const tag = `${date}-${time}-${shortSha}`;
+          const commitDate = new Date(commit.committer.date);
+          const isoDate = commitDate.toISOString();
+
+          const pad = (n) => String(n).padStart(2, '0');
+          const year = commitDate.getUTCFullYear();
+          const month = commitDate.getUTCMonth() + 1;
+          const day = commitDate.getUTCDate();
+          const hour = commitDate.getUTCHours();
+          const minute = commitDate.getUTCMinutes();
+          const second = commitDate.getUTCSeconds();
+
+          const tokens = [
+            ['{YYYY}', year],
+            ['{YY}', String(year).slice(-2)],
+            ['{MM}', pad(month)],
+            ['{M}', month],
+            ['{DD}', pad(day)],
+            ['{D}', day],
+            ['{HH}', pad(hour)],
+            ['{H}', hour],
+            ['{mm}', pad(minute)],
+            ['{m}', minute],
+            ['{ss}', pad(second)],
+            ['{s}', second]
+          ];
+
+          let tagFormat = '${{ inputs.tag-format }}';
+          tagFormat = tagFormat.replace(/\{sha:(\d+)\}/g, (_, len) => {
+            return sha.substring(0, parseInt(len));
+          });
+          tagFormat = tagFormat.replace(/\{sha\}/g, sha);
+          for (const [token, value] of tokens) {
+            tagFormat = tagFormat.replaceAll(token, value);
+          }
+          const tag = tagFormat;
 
           try {
             await github.rest.repos.getReleaseByTag({
@@ -83,8 +118,9 @@ runs:
             body: releaseNotes
           });
 
+          const shortSha = sha.substring(0, 7);
           core.setOutput('tag', tag);
-          core.setOutput('iso-date', commitDate);
+          core.setOutput('iso-date', isoDate);
           core.setOutput('short-sha', shortSha);
 
           core.info(`Created release '${releaseName}' with tag '${tag}'`);

@@ -1,8 +1,8 @@
 # Date-Time Commit Release
 
 A GitHub Action that creates releases with tags based on commit date and SHA.
-The generated tag format is: `YYYYMMDD-HHMMSS-shortsha` (e.g.,
-`20240426-143045-e4f36cb`)
+The default tag format is: `YYYYMMDD-HHMMSS-shortsha` (e.g.,
+`20240426-143045-e4f36cb`), but can be customized using format tokens.
 
 ## Why Use This Action?
 
@@ -17,10 +17,12 @@ without manual versioning. It's particularly useful for:
 ## Features
 
 - Generates unique tags based on commit timestamp and SHA
+- Customizable tag format with date/time/SHA tokens
 - Automatically creates GitHub releases
 - Generates release notes from commits
 - Prevents duplicate releases for the same commit
 - No manual version management needed
+- Supports semver-compatible tag formats
 
 ## Usage
 
@@ -59,11 +61,12 @@ permissions:
 
 ## Inputs
 
-| Input          | Description                                     | Required | Default               |
-| -------------- | ----------------------------------------------- | -------- | --------------------- |
-| `commit`       | Commit reference (branch, tag, or hash)         | Yes      | -                     |
-| `github-token` | GitHub token for API access                     | No       | `${{ github.token }}` |
-| `release-name` | Release name template (use `{tag}` placeholder) | No       | `Release {tag}`       |
+| Input          | Description                                     | Required | Default                                   |
+| -------------- | ----------------------------------------------- | -------- | ----------------------------------------- |
+| `commit`       | Commit reference (branch, tag, or hash)         | Yes      | -                                         |
+| `github-token` | GitHub token for API access                     | No       | `${{ github.token }}`                     |
+| `tag-format`   | Tag format template (see tokens below)          | No       | `{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:8}`    |
+| `release-name` | Release name template (use `{tag}` placeholder) | No       | `Release {tag}`                           |
 
 ## Outputs
 
@@ -75,12 +78,43 @@ permissions:
 
 ### Tag Format
 
-The tag format is: `YYYYMMDD-HHMMSS-shortsha`
+The default tag format is: `{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:8}`
 
-All timestamps are in **UTC timezone**, regardless of the commit's original
-timezone.
+You can customize the format using the `tag-format` input with the following tokens:
 
-For example, given this git log output:
+**Year:**
+- `{YYYY}` - 4-digit year (e.g., `2025`)
+- `{YY}` - 2-digit year (e.g., `25`)
+
+**Month:**
+- `{MM}` - 2-digit month with leading zero (e.g., `01`, `11`)
+- `{M}` - month without leading zero (e.g., `1`, `11`)
+
+**Day:**
+- `{DD}` - 2-digit day with leading zero (e.g., `05`, `12`)
+- `{D}` - day without leading zero (e.g., `5`, `12`)
+
+**Hour:**
+- `{HH}` - 2-digit hour with leading zero (e.g., `08`, `15`)
+- `{H}` - hour without leading zero (e.g., `8`, `15`)
+
+**Minute:**
+- `{mm}` - 2-digit minute with leading zero (e.g., `04`, `30`)
+- `{m}` - minute without leading zero (e.g., `4`, `30`)
+
+**Second:**
+- `{ss}` - 2-digit second with leading zero (e.g., `01`, `45`)
+- `{s}` - second without leading zero (e.g., `1`, `45`)
+
+**Commit SHA:**
+- `{sha}` - full commit SHA
+- `{sha:N}` - first N characters of SHA (e.g., `{sha:8}`)
+
+All timestamps are in **UTC timezone**, regardless of the commit's original timezone.
+
+#### Example
+
+Given this git log output:
 
 ```
 $ git log -1 --format=fuller main
@@ -93,10 +127,57 @@ CommitDate: Fri Apr 26 14:30:45 2024 +0000
     Add new feature
 ```
 
-The action uses the **CommitDate** (`2024-04-26T14:30:45Z`) and **commit SHA**
-(`e4f36cb1e382e2779d3609c1336bdbe7cfb0902c`) to generate:
+The action uses the **CommitDate** (`2024-04-26T14:30:45Z`) and **commit SHA** to generate tags:
 
-**Tag:** `20240426-143045-e4f36cb`
+| Format | Result |
+|--------|--------|
+| `{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:8}` (default) | `20240426-143045-e4f36cb` |
+| `v{YYYY}.{M}.{D}` | `v2024.4.26` |
+| `{YY}.{MM}.{DD}-{sha:7}` | `24.04.26-e4f36cb` |
+| `release-{YYYY}{MM}{DD}{HH}{mm}` | `release-202404261430` |
+
+## Examples
+
+### Basic Usage with Custom Tag Format
+
+```yaml
+- name: Create release with custom tag format
+  uses: igorgatis/date-time-commit-release@v1
+  with:
+    commit: main
+    tag-format: "v{YYYY}.{MM}.{DD}-{sha:7}"
+```
+
+### Semver-Compatible Format
+
+This example creates tags compatible with [Semantic Versioning](https://semver.org/).
+You can verify the format using the [semver checker](https://jubianchi.github.io/semver-check/).
+
+```yaml
+- name: Create semver-compatible release
+  uses: igorgatis/date-time-commit-release@v1
+  with:
+    commit: main
+    tag-format: "{YYYY}.{M}.{D}"
+```
+
+This generates tags like `2024.4.26`, which are valid semver versions where:
+- Major version = year (e.g., `2024`)
+- Minor version = month (e.g., `4`)
+- Patch version = day (e.g., `26`)
+
+### Compact Format
+
+```yaml
+- name: Create release with compact format
+  uses: igorgatis/date-time-commit-release@v1
+  with:
+    commit: main
+    tag-format: "{YY}{MM}{DD}-{HH}{mm}-{sha:6}"
+    release-name: "Build {tag}"
+```
+
+This generates tags like `240426-1430-e4f36c` for more compact identifiers.
 
 ## Example: Custom Release Name and Using Outputs in Another Job
 
