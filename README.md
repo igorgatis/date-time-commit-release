@@ -75,6 +75,7 @@ permissions:
 | `tag`       | The generated release tag                |
 | `iso-date`  | The commit date in ISO 8601 format (UTC) |
 | `short-sha` | The short commit SHA (7 characters)      |
+| `long-sha`  | The full commit SHA                      |
 
 ### Tag Format
 
@@ -189,6 +190,7 @@ jobs:
       tag: ${{ steps.create-release.outputs.tag }}
       iso-date: ${{ steps.create-release.outputs.iso-date }}
       short-sha: ${{ steps.create-release.outputs.short-sha }}
+      long-sha: ${{ steps.create-release.outputs.long-sha }}
     steps:
       - name: Create release
         id: create-release
@@ -205,7 +207,8 @@ jobs:
         run: |
           echo "Deploying ${{ needs.release.outputs.tag }}"
           echo "Commit date: ${{ needs.release.outputs.iso-date }}"
-          echo "Commit SHA: ${{ needs.release.outputs.short-sha }}"
+          echo "Short SHA: ${{ needs.release.outputs.short-sha }}"
+          echo "Full SHA: ${{ needs.release.outputs.long-sha }}"
 ```
 
 ## How It Works

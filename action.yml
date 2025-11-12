@@ -29,6 +29,9 @@ outputs:
   short-sha:
     description: "The short commit SHA (7 characters)"
     value: ${{ steps.generate.outputs.short-sha }}
+  long-sha:
+    description: "The full commit SHA"
+    value: ${{ steps.generate.outputs.long-sha }}
 
 runs:
   using: "composite"
@@ -121,6 +124,7 @@ runs:
           core.setOutput('tag', tag);
           core.setOutput('iso-date', isoDate);
           core.setOutput('short-sha', shortSha);
+          core.setOutput('long-sha', sha);
 
           core.info(`Created release '${releaseName}' with tag '${tag}'`);
 
