@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create release
-        uses: igorgatis/date-time-commit-release@v1
+        uses: igorgatis/date-time-commit-release@v2
         with:
           commit: ${{ inputs.commit }}
 ```
@@ -142,7 +142,7 @@ The action uses the **CommitDate** (`2024-04-26T14:30:45Z`) and **commit SHA** t
 
 ```yaml
 - name: Create release with custom tag format
-  uses: igorgatis/date-time-commit-release@v1
+  uses: igorgatis/date-time-commit-release@v2
   with:
     commit: main
     tag-format: "v{YYYY}.{MM}.{DD}-{sha:7}"
@@ -155,7 +155,7 @@ You can verify the format using the [semver checker](https://jubianchi.github.io
 
 ```yaml
 - name: Create semver-compatible release
-  uses: igorgatis/date-time-commit-release@v1
+  uses: igorgatis/date-time-commit-release@v2
   with:
     commit: main
     tag-format: "{YYYY}.{M}.{D}"
@@ -170,7 +170,7 @@ This generates tags like `2024.4.26`, which are valid semver versions where:
 
 ```yaml
 - name: Create release with compact format
-  uses: igorgatis/date-time-commit-release@v1
+  uses: igorgatis/date-time-commit-release@v2
   with:
     commit: main
     tag-format: "{YY}{MM}{DD}-{HH}{mm}-{sha:6}"
@@ -192,7 +192,7 @@ jobs:
     steps:
       - name: Create release
         id: create-release
-        uses: igorgatis/date-time-commit-release@v1
+        uses: igorgatis/date-time-commit-release@v2
         with:
           commit: main
           release-name: "Production Release {tag}"
