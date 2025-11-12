@@ -1,8 +1,11 @@
 # Date-Time Commit Release
 
 A GitHub Action that creates releases with tags based on commit date and SHA.
-The default tag format is: `YYYYMMDD-HHMMSS-shortsha` (e.g.,
-`20240426-143045-e4f36cb`), but can be customized using format tokens.
+Create tags like:
+- `20240426-143045-e4f36cb` - Timestamp with commit SHA
+- `2024.4.26` - Semver-compatible (year.month.day)
+- `v2024.04.26-e4f36cb` - Version-style with SHA
+- `release-202404261430` - Compact timestamp format
 
 ## Why Use This Action?
 
@@ -79,37 +82,24 @@ permissions:
 
 ### Tag Format
 
-The default tag format is: `{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:7}`
+Customize the tag format using the `tag-format` input with these tokens:
 
-You can customize the format using the `tag-format` input with the following tokens:
-
-**Year:**
-- `{YYYY}` - 4-digit year (e.g., `2025`)
-- `{YY}` - 2-digit year (e.g., `25`)
-
-**Month:**
-- `{MM}` - 2-digit month with leading zero (e.g., `01`, `11`)
-- `{M}` - month without leading zero (e.g., `1`, `11`)
-
-**Day:**
-- `{DD}` - 2-digit day with leading zero (e.g., `05`, `12`)
-- `{D}` - day without leading zero (e.g., `5`, `12`)
-
-**Hour:**
-- `{HH}` - 2-digit hour with leading zero (e.g., `08`, `15`)
-- `{H}` - hour without leading zero (e.g., `8`, `15`)
-
-**Minute:**
-- `{mm}` - 2-digit minute with leading zero (e.g., `04`, `30`)
-- `{m}` - minute without leading zero (e.g., `4`, `30`)
-
-**Second:**
-- `{ss}` - 2-digit second with leading zero (e.g., `01`, `45`)
-- `{s}` - second without leading zero (e.g., `1`, `45`)
-
-**Commit SHA:**
-- `{sha}` - full commit SHA
-- `{sha:N}` - first N characters of SHA (e.g., `{sha:8}`)
+| Token | Description | Example |
+|-------|-------------|---------|
+| `{YYYY}` | 4-digit year | `2025` |
+| `{YY}` | 2-digit year | `25` |
+| `{MM}` | 2-digit month with leading zero | `01`, `11` |
+| `{M}` | Month without leading zero | `1`, `11` |
+| `{DD}` | 2-digit day with leading zero | `05`, `12` |
+| `{D}` | Day without leading zero | `5`, `12` |
+| `{HH}` | 2-digit hour with leading zero | `08`, `15` |
+| `{H}` | Hour without leading zero | `8`, `15` |
+| `{mm}` | 2-digit minute with leading zero | `04`, `30` |
+| `{m}` | Minute without leading zero | `4`, `30` |
+| `{ss}` | 2-digit second with leading zero | `01`, `45` |
+| `{s}` | Second without leading zero | `1`, `45` |
+| `{sha}` | Full commit SHA | `e4f36cb1e382e2779d3609c1336bdbe7cfb0902c` |
+| `{sha:N}` | First N characters of SHA | `{sha:7}` → `e4f36cb` |
 
 All timestamps are in **UTC timezone**, regardless of the commit's original timezone.
 
@@ -214,9 +204,9 @@ jobs:
 ## How It Works
 
 1. Fetches the commit information for the specified reference
-2. Extracts the commit date and formats it as `YYYYMMDD-HHMMSS` (uses commit
-   date, not author date, in UTC)
-3. Appends the first 7 characters of the commit SHA
+2. Extracts the commit date (uses commit date, not author date, in UTC) and
+   SHA
+3. Generates a tag by replacing format tokens with the extracted values
 4. Checks if a release with this tag already exists (fails if it does)
 5. Generates release notes from commits (since last tag or all commits if no
    previous tags)
