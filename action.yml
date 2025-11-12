@@ -11,9 +11,9 @@ inputs:
     required: true
     default: ${{ github.token }}
   tag-format:
-    description: 'Tag format template. Tokens: {YYYY}, {YY}, {MM}, {M}, {DD}, {D}, {HH}, {H}, {mm}, {m}, {ss}, {s}, {sha}, {sha:N}. Default: "{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:8}"'
+    description: 'Tag format template. Tokens: {YYYY}, {YY}, {MM}, {M}, {DD}, {D}, {HH}, {H}, {mm}, {m}, {ss}, {s}, {sha}, {sha:N}. Default: "{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:7}"'
     required: false
-    default: "{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:8}"
+    default: "{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:7}"
   release-name:
     description: 'Release name template. Use {tag} placeholder. Default: "Release {tag}"'
     required: false

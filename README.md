@@ -65,7 +65,7 @@ permissions:
 | -------------- | ----------------------------------------------- | -------- | ----------------------------------------- |
 | `commit`       | Commit reference (branch, tag, or hash)         | Yes      | -                                         |
 | `github-token` | GitHub token for API access                     | No       | `${{ github.token }}`                     |
-| `tag-format`   | Tag format template (see tokens below)          | No       | `{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:8}`    |
+| `tag-format`   | Tag format template (see tokens below)          | No       | `{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:7}`    |
 | `release-name` | Release name template (use `{tag}` placeholder) | No       | `Release {tag}`                           |
 
 ## Outputs
@@ -78,7 +78,7 @@ permissions:
 
 ### Tag Format
 
-The default tag format is: `{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:8}`
+The default tag format is: `{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:7}`
 
 You can customize the format using the `tag-format` input with the following tokens:
 
@@ -131,7 +131,7 @@ The action uses the **CommitDate** (`2024-04-26T14:30:45Z`) and **commit SHA** t
 
 | Format | Result |
 |--------|--------|
-| `{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:8}` (default) | `20240426-143045-e4f36cb` |
+| `{YYYY}{MM}{DD}-{HH}{mm}{ss}-{sha:7}` (default) | `20240426-143045-e4f36cb` |
 | `v{YYYY}.{M}.{D}` | `v2024.4.26` |
 | `{YY}.{MM}.{DD}-{sha:7}` | `24.04.26-e4f36cb` |
 | `release-{YYYY}{MM}{DD}{HH}{mm}` | `release-202404261430` |
