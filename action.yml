@@ -70,15 +70,14 @@ runs:
             ['{s}', second]
           ];
 
-          let tagFormat = '${{ inputs.tag-format }}';
-          tagFormat = tagFormat.replace(/\{sha:(\d+)\}/g, (_, len) => {
+          let tag = '${{ inputs.tag-format }}';
+          tag = tag.replace(/\{sha:(\d+)\}/g, (_, len) => {
             return sha.substring(0, parseInt(len));
           });
-          tagFormat = tagFormat.replace(/\{sha\}/g, sha);
+          tag = tag.replace(/\{sha\}/g, sha);
           for (const [token, value] of tokens) {
-            tagFormat = tagFormat.replaceAll(token, value);
+            tag = tag.replaceAll(token, value);
           }
-          const tag = tagFormat;
 
           try {
             await github.rest.repos.getReleaseByTag({
